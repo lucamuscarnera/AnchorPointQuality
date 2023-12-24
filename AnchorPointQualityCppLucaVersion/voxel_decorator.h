@@ -56,9 +56,10 @@ class VoxelDecorator
 					}
 				}
 			}
+			return ret;
 		}
 		
-	private:	
+	protected:	
 		T & voxelgrid;												// reference alla voxelgrid passata al costruttore
 		format padValue;
 };

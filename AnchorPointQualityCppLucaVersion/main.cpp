@@ -3,6 +3,7 @@
 #include "classifier.h"
 #include "numpy_array.h"
 #include "voxel_grid.h"
+#include "example_decorator.h"
 
 #include <iostream>
 
@@ -30,6 +31,9 @@ int main()
 	std::cout << "L'output dovrebbe essere 3^3 ovvero 27" << std::endl;
 	std::cout << "A @ B = " << A.dot(B) << std::endl;
 	*/
-	NumpyArray X("prova.npy");
-	std::cout << X.get(4,1,1) << std::endl;
+	VoxelGrid voxelgrid("voxelization_75.npy");
+	ExampleDecorator voxeldecorator(voxelgrid);
+	Tensor A = voxeldecorator.subvoxelgrid<5>(10,10,10);
+	Tensor B = voxeldecorator.subvoxelgrid<5>(10,10,10);
+	std::cout << "prodotto scalare tra le sottogriglie = " <<  A.dot(B) << std::endl;
 };

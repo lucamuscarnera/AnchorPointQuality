@@ -12,7 +12,18 @@
 
 class VoxelGrid
 {
-	VoxelGrid() {};
+	public:
+	VoxelGrid(std::string path) : array(path) {};
+	double operator()(int i,int j,int k) {
+		return array.get(i,j,k);
+	}
+	
+	NumpyArray & getArray() {
+		return array;
+	}
+	
+	private:
+	NumpyArray array;
 };
 
 #endif 
