@@ -2,8 +2,9 @@
 #define TENSOR_HPP
 
 #include <array>
+#include <string>
 #include <iostream>
-
+#include "numpy_array.h"
 
 /*  Specializzazione del lavoro di Giuseppe:  
  *	La classe çontiene tutto il necessario ma possiamo sfruttare 
@@ -15,6 +16,37 @@ template <typename T, size_t side>
 class Tensor {
 public:
     Tensor() {}
+	Tensor(std::string path)  {
+		// genero un oggetto numpy array
+		// e copio il contenuto. 
+		// concettualmente é uno spreco di tempo, ma va fatto una sola volta
+		// al caricamento del programma e rende la gestione di tutto un po piú semplice
+		NumpyArray<T> array(path);
+		std::cout << "Carico da disco un numpy array di shape " << array.shape[0] << " " << array.shape[1] << " " << array.shape[2] << std::endl;
+		for(int i = 0; i < side;i++)
+			for(int j = 0; j < side; j ++)
+				for(int k = 0; k < side; k++)
+					data[index(i,j,k)] = array.get(i,j,k);
+	}
+	
+	
+	void print() 
+	{
+		for(int i = 0; i < side;i++)
+		{
+			for(int j = 0; j < side; j ++)
+			{
+				std::cout << "[ ";
+				for(int k = 0; k < side; k++) 
+				{
+					std:: cout << data[index(i,j,k)] << " ";
+				} 
+				std::cout << "]";
+			}
+			std::cout << "\n";
+		}
+	}
+	
 	
     // Get element by index
     T& operator()(int i, int j, int k) {
@@ -27,7 +59,7 @@ public:
     }
 	
 	// dot product
-	T dot(Tensor<T,side> & other)
+	T dot(Tensor<T,side> & other) const
 	{
 		T ret = T(0.);
 		for(int i = 0; i < side;i++)

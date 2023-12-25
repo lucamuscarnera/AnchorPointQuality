@@ -11,6 +11,8 @@
 #include <string>
 #include <fstream>
 
+template
+<typename DataType>
 class NumpyArray
 {
 	public:
@@ -18,7 +20,7 @@ class NumpyArray
 		{
 			// leggo il file 
 			char ch;
-			char curr_datum[8];
+			char curr_datum[sizeof(DataType)];
 			int  datum_counter = 0;
 			
 			bool leggi_shape = false;
@@ -49,7 +51,8 @@ class NumpyArray
 							{
 								if(ch == ',' || ch == ')')
 								{
-									shape.push_back(std::stoi(curr_shape_dim));
+									if(curr_shape_dim.size() > 0)
+										shape.push_back(std::stoi(curr_shape_dim));
 									curr_shape_dim = "";
 									if(ch == ')')
 									{
@@ -82,9 +85,9 @@ class NumpyArray
 
 					curr_datum[datum_counter] = (char) ch;
 					datum_counter++;
-					if(datum_counter == 8)
+					if(datum_counter == sizeof(DataType))
 					{
-						double val = *((double*) curr_datum);
+						DataType val = *((DataType*) curr_datum);
 						rawdata.push_back(val);
 						//std::cout << val << std::endl;
 						datum_counter = 0;
@@ -95,7 +98,7 @@ class NumpyArray
 		}
 		
 		template <class ... Ts>
-		double get(Ts && ... inputs)
+		DataType get(Ts && ... inputs)
 		{
 			int i = 0;
 			int indice = 0;
@@ -125,8 +128,14 @@ class NumpyArray
 			return rawdata[indice];
 		}
 		
+		DataType operator[](int i)
+		{
+			// solo per dati unidimensionale
+			return rawdata[i];
+		}
+		
 	std::vector<int  > shape;
-	std::vector<double> rawdata;
+	std::vector<DataType> rawdata;
 };
 
 #endif

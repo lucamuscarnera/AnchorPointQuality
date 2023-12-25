@@ -1,21 +1,35 @@
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
 
-template<typename VoxelGridDecorator>
+#include "tensor.hpp"
+#include "data_aggregation.h"
+#include "point3d.h"
+
+template
+<
+typename T_voxel,int side
+>
 class Classifier
 {
 	public:
-		Classifier(VoxelGridDecorator & _VGD)
-		:	VGD(_VGD)
+		Classifier(Tensor<T_voxel,side> & W)
+		:	
+		W(W)
+		{}
+		
+		template
+		<typename VD,typename FPD>
+		auto predict(DataAggregation<VD,FPD> & aggregate, Point3D & p)
 		{
+			// IN  : un punto
+			// OUT : un punteggio
+			// richiedo il punto ad aggregate
+			Tensor A = aggregate.template subvoxelgridFromCoordinates<side>(p);
+			return A.dot(W);
 		}
 		
-		int test()
-		{
-			return VGD.get(0,0,0);
-		}
 	private:
-		VoxelGridDecorator & VGD;
+		Tensor<T_voxel,side> & W;
 };
 
 #endif

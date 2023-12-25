@@ -17,7 +17,8 @@ class VoxelDecorator
 	public:
 		VoxelDecorator(T & voxelgrid, format padValue = format(0)) : 
 					   voxelgrid(voxelgrid),
-					   padValue(padValue)
+					   padValue(padValue),
+					   zoom(zoom)
 					   {}											// costruttore
 					   
 		const virtual format get(int i,int j,int k) = 0;		  	// funzione puramente virtuale per ottenere un elemento
@@ -31,14 +32,15 @@ class VoxelDecorator
 		};
 		
 		template<int side>
-		const Tensor<format, 2*side> subvoxelgrid(int i,int j,int k)
+		const Tensor<format, side> subvoxelgrid(int i,int j,int k)
 		{
-			Tensor<format, 2*side> ret;
-			for(size_t ii = i - side; ii < i + side; ii++)
+			Tensor<format, side> ret;
+			int halfside = side / 2.;
+			for(int ii = ((int) i) - halfside; ii < ((int) i) + halfside; ii++)
 			{
-				for(size_t jj = j - side; jj < j + side; jj++)
+				for(int jj = ((int) j) - halfside; jj < ((int) j) + halfside; jj++)
 				{
-					for(size_t kk = k - side; kk < k + side; kk++)
+					for(int kk = ((int) k) - halfside; kk < ((int) k) + halfside; kk++)
 					{
 						format value;
 						if( ((ii < 0) || (ii >= shape_X())) ||
@@ -52,16 +54,18 @@ class VoxelDecorator
 						{
 							value = get(ii,jj,kk);
 						}
-						ret(ii - (i - side),jj - (j - side),kk - (k -side)) = value;
+						ret(ii - ( ((int) i) - halfside),jj - ( ((int) j) - halfside),kk - ( ((int) k) - halfside)) = value;
 					}
 				}
 			}
 			return ret;
 		}
-		
+
+	
 	protected:	
 		T & voxelgrid;												// reference alla voxelgrid passata al costruttore
 		format padValue;
+		float zoom;
 };
 
 

@@ -13,17 +13,24 @@
 class VoxelGrid
 {
 	public:
-	VoxelGrid(std::string path) : array(path) {};
+	VoxelGrid(std::string path) : array(path) {
+		std::cout << "*** caricamento voxelgrid ***" << std::endl;
+		std::cout << "ordine " << array.shape.size() << std::endl;
+		std::cout << "shape = " ;
+		for(int i = 0 ; i < array.shape.size();i++)
+			std::cout << array.shape[i] << " ";
+		std::cout << std::endl;
+	};
 	double operator()(int i,int j,int k) {
 		return array.get(i,j,k);
 	}
 	
-	NumpyArray & getArray() {
+	NumpyArray<double> & getArray() {
 		return array;
 	}
 	
 	private:
-	NumpyArray array;
+	NumpyArray<double> array;
 };
 
 #endif 
