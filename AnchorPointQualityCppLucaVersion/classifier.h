@@ -12,9 +12,10 @@ typename T_voxel,int side
 class Classifier
 {
 	public:
-		Classifier(Tensor<T_voxel,side> & W)
+		Classifier(Tensor<T_voxel,side> & W, NumpyArray<float> &  Wf)
 		:	
-		W(W)
+		W(W),
+		Wf(Wf)
 		{}
 		
 		template
@@ -23,13 +24,19 @@ class Classifier
 		{
 			// IN  : un punto
 			// OUT : un punteggio
+			
 			// richiedo il punto ad aggregate
-			Tensor A = aggregate.template subvoxelgridFromCoordinates<side>(p);
+			Tensor A  = aggregate.template subvoxelgridFromCoordinates<side>(p);
+			
+			// calcolo il prodotto scalare tra la finger print e il regressore
+			float fWf = aggregate.getFingerPrintDecorator().dot(Wf);
+			
 			return A.dot(W);
 		}
 		
 	private:
 		Tensor<T_voxel,side> & W;
+		NumpyArray<float> & Wf;
 };
 
 #endif

@@ -13,6 +13,12 @@ class Point3D
 		std::cout << "(" << x << "," << y << "," << z << ")";
 	}
 	
+	
+	double squareDistance(Point3D & other)
+	{
+		return (x - other.x)*(x - other.x) +  (y - other.y)*(y - other.y) +  (z - other.z)*(z - other.z);
+	}
+	
 	double getX() {return x;}
 	double getY() {return y;}
 	double getZ() {return z;}

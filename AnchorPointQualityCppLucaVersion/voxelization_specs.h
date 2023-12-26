@@ -1,6 +1,8 @@
 #ifndef VOXELIZATION_SPECS_H
 #define VOXELIZATION_SPECS_H
 
+#include "point3d.h"
+
 /*
  * Definisco una classe in grado di contenere le informazioni spaziali sulla voxelgrid
  */
@@ -35,6 +37,11 @@ class VoxelizationSpecs
 		std::cout << "x in (" << x_min << ","<< x_max <<")" << std::endl;
 		std::cout << "y in (" << y_min << ","<< y_max <<")" << std::endl;
 		std::cout << "z in (" << z_min << ","<< z_max <<")" << std::endl;
+	}
+	
+	Point3D center()
+	{
+		return Point3D( (x_max + x_min)/2., (y_max + y_min)/2., (z_max + z_min)/2. );
 	}
 	
 	double x_min;

@@ -5,12 +5,26 @@
 #include <string>
 #include <iostream>
 #include "numpy_array.h"
+#include <concepts>
 
 /*  Specializzazione del lavoro di Giuseppe:  
  *	La classe çontiene tutto il necessario ma possiamo sfruttare 
  *  il fatto di conoscere a compile time la dimensione del tensore.
  *  		Luca
  */
+ 
+ 
+template<typename P,typename T>
+concept GroupInjectable = requires (T a, P b)
+{
+	// richiediamo che il tipo dell'altro tensore
+	// possa essere mappato in un oggetto nel gruppo
+	// definito dal tipo del tensore corrente.
+	// in altri termini richiediamo che sia ben definita 
+	// l'operazione di prodotto e somma.
+    a + b; 
+	a * b; 
+};
 
 template <typename T, size_t side>
 class Tensor {
@@ -58,19 +72,24 @@ public:
         return i * (side*side) + j * side + k;
     }
 	
+
+
+	
 	// dot product
-	T dot(Tensor<T,side> & other) const
+	template<typename P>
+	T dot(Tensor<P,side> & other) const
 	{
-		T ret = T(0.);
-		for(int i = 0; i < side;i++)
-			for(int j = 0; j < side; j++)
-				for(int k = 0; k < side; k++)
-					ret += data[index(i,j,k)] * other(i,j,k);
-		
+		static_assert(GroupInjectable<P,T>, "!!!");
+		{
+			T ret = T(0.);
+			for(int i = 0; i < side;i++)
+				for(int j = 0; j < side; j++)
+					for(int k = 0; k < side; k++)
+						ret += data[index(i,j,k)] * other(i,j,k);
+			return ret;
+		}
 		// si osservi come il ciclo piú interno scorre lungo il terzo indice
 		// abbiamo un dot product che é quindi allineato con la data locality
-		
-		return ret;
 	}
 
 private:

@@ -58,11 +58,15 @@ class NumpyArray
 									{
 										leggi_shape = false;
 										//std::cout << "shape = (";
+										int shapeprod = 1;
 										for(auto & s : shape)
 										{
 											//std::cout <<  s << " ";
+											shapeprod *= s;
 										}
 										//std::cout << ")" << std::endl;
+										rawdata.clear();
+										rawdata.reserve(shapeprod);
 									}
 								}
 								else 
@@ -125,6 +129,7 @@ class NumpyArray
 				////std::cout << inputs << " su " << shape[i] << std::endl;
 				i++;
 			} (), ...);
+			//std::cout << "indice richiesto = " << indice << " lunghezza = " << rawdata.size() << std::endl;
 			return rawdata[indice];
 		}
 		

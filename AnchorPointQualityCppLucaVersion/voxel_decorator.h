@@ -32,7 +32,11 @@ class VoxelDecorator
 		};
 		
 		template<int side>
-		const Tensor<format, side> subvoxelgrid(int i,int j,int k)
+		const Tensor<format, side> 
+		subvoxelgrid(int i,											// indice x
+					 int j,											// indice y
+					 int k, 										// indice z
+					 bool onlyball = false)							// se settato true pone a 0 tutti i voxel al di fuori della sfera inscritta nella VG
 		{
 			Tensor<format, side> ret;
 			int halfside = side / 2.;
@@ -41,18 +45,36 @@ class VoxelDecorator
 				for(int jj = ((int) j) - halfside; jj < ((int) j) + halfside; jj++)
 				{
 					for(int kk = ((int) k) - halfside; kk < ((int) k) + halfside; kk++)
-					{
-						format value;
+					{					
+						format value = 0;
+						format coeff = 0;
 						if( ((ii < 0) || (ii >= shape_X())) ||
 							((jj < 0) || (jj >= shape_Y())) ||
 							((kk < 0) || (kk >= shape_Z()))
 						)
 						{
-							value = padValue;
+							value = 0;
 						}
 						else
 						{
-							value = get(ii,jj,kk);
+							if(!onlyball)
+							{
+								coeff = 1;
+							}
+							else
+							{
+								// calcolo le coordinate 
+								// nel sistema di riferimento cartesiano sul dominio I = (-1,1)^3
+								double x = (((double)ii) - (((double)i) - halfside))/side * 2 - 1;  
+								double y = (((double)jj) - (((double)j) - halfside))/side * 2 - 1;
+								double z = (((double)kk) - (((double)k) - halfside))/side * 2 - 1;
+								// considero solo i punti all interno della sfera di raggio 1
+								if( (x*x + y*y + z*z) <= 1)
+								{
+									coeff = 1;
+								}									
+							}
+							value = coeff * get(ii,jj,kk);
 						}
 						ret(ii - ( ((int) i) - halfside),jj - ( ((int) j) - halfside),kk - ( ((int) k) - halfside)) = value;
 					}

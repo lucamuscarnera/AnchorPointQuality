@@ -41,7 +41,7 @@ class DataAggregation
 			j = (p.getY() - voxelizationSpecs.y_min) / (voxelizationSpecs.y_max - voxelizationSpecs.y_min) * voxelDecorator.shape_Y();
 			k = (p.getZ() - voxelizationSpecs.z_min) / (voxelizationSpecs.z_max - voxelizationSpecs.z_min) * voxelDecorator.shape_Z();
 						
-			return voxelDecorator.template subvoxelgrid<side>(i,j,k);
+			return voxelDecorator.template subvoxelgrid<side>(i,j,k,true);
 		}
 		
 		
