@@ -19,9 +19,30 @@ class Point3D
 		return (x - other.x)*(x - other.x) +  (y - other.y)*(y - other.y) +  (z - other.z)*(z - other.z);
 	}
 	
-	double getX() {return x;}
-	double getY() {return y;}
-	double getZ() {return z;}
+	double & getX() {return x;}
+	double & getY() {return y;}
+	double & getZ() {return z;}
+	
+	double & operator[](int i)
+	{
+		switch(i)
+		{
+			case 0 : {
+					return getX();
+				break;
+			}
+			
+			case 1: {
+					return getY();
+				break;
+			}
+			
+			case 2: {
+					return getZ();
+				break;
+			}
+		}
+	}
 	
 	private:
 		double x;

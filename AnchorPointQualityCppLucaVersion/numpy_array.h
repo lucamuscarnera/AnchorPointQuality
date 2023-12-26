@@ -16,6 +16,7 @@ template
 class NumpyArray
 {
 	public:
+		NumpyArray() {};
 		NumpyArray(std::string path)
 		{
 			// leggo il file 

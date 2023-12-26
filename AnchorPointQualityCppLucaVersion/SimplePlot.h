@@ -37,7 +37,7 @@ class SimplePlot
 			ylabel = label;
 		}		
 		
-		void show()
+		void show(bool showid = false)
 		{
 			// inizializzo lo schermo
 			int H = 20;
@@ -71,6 +71,7 @@ class SimplePlot
 			
 			std::vector<std::string> symbols;
 			
+			char count = 0;
 			for(auto & p: points)
 			{
 				float x = p.getX();
@@ -79,7 +80,8 @@ class SimplePlot
 				int i = (x - x_min)/(x_max - x_min) * (W - 1);
 				int j = (H - 1) - (y - y_min)/(y_max - y_min) * (H - 1);	
 				symbols.push_back(p.getSymbol());
-				screen[i][j] = 1;
+				screen[i][j] = count;
+				count++;
 			}
 			
 			
@@ -109,7 +111,15 @@ class SimplePlot
 					if( screen[(W-1) - i][j] == 0)
 						std::cout << "  ";
 					else
-						std::cout << "<>";
+					{
+						if(!showid)
+							std::cout << "<>";
+						else
+						{
+							int count = screen[(W-1) - i][j];
+							std::cout << (count < 10? " " : "" ) << count;
+						}
+					}
 				}
 				std::cout << "|" << std::endl << "\t\t";
 			}

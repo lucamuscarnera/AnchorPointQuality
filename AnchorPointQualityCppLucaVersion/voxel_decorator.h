@@ -10,6 +10,8 @@
  *	Questa classe fornisce lo scheletro per costruire uno scheletro che permetta al
  *  nostro sistema di interagire con tale voxelgrid.
  ***********************************************************************************************************/
+#include "point3d.h"
+#include "point_matrix.h"
 
 template<typename T,typename format>
 class VoxelDecorator
@@ -36,7 +38,10 @@ class VoxelDecorator
 		subvoxelgrid(int i,											// indice x
 					 int j,											// indice y
 					 int k, 										// indice z
-					 bool onlyball = false)							// se settato true pone a 0 tutti i voxel al di fuori della sfera inscritta nella VG
+					 bool onlyball = false,							// se settato true pone a 0 tutti i voxel al di fuori della sfera inscritta nella VG
+					 bool rotational_invariance = false 			// se settato a true mappa la subvoxel grid estratta nel suo rappresentate di equivalenza per la relazione x ~ y dover
+																	// x~y <--> esiste una rotazione che porta da x a y 
+		)
 		{
 			Tensor<format, side> ret;
 			int halfside = side / 2.;
@@ -80,6 +85,44 @@ class VoxelDecorator
 					}
 				}
 			}
+			
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			if(rotational_invariance)
+			{
+				// 1. mappa la subvoxel grid in una nuvola di punti
+				// 			>>> pointSet <= ...(subvoxelGrid);
+				
+				PointMatrix P;
+				for(int i = 0 ; i < side ; i++)
+					for(int j = 0 ; j < side;j++)
+						for(int k = 0; k < side;k++)
+						{
+							Point3D p(i,j,k);
+							if( ret(i,j,k) > 0.5 )
+								P.addPoint(p);
+						}
+				
+				// 2.a se il numero di punti estratto é minore di 2 ritorrna la griglia ottenuta negli step precedenti
+				//			>>> return ret;
+				
+				if(P.size() < 2)
+					return ret;
+				
+				// 2.b altrimenti mappa la nuvola di punti nel suo rappresentante di equivalenza
+				//			>>> pointSet.representant()
+				// 10. Standardizzo i punti tra 0 e 1
+				//			>>> pointSet.standardize()
+				// 11. Sovrascrivo ret
+				//			>>>	ret = ret * 0
+				//			>>> for p in pointSet'
+				//			>>>		i = p.coord[0] * ( shapeX - 1 )
+				//			>>>		j = p.coord[1] * ( shapeY - 1 )
+				//			>>>		k = p.coord[2] * ( shapeZ - 1 )
+				//			>>>		ret[i,j,k] = 1
+				// 12. Ritorno  ret
+				//			>>> return ret
+			}
+			
 			return ret;
 		}
 

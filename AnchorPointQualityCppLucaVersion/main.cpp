@@ -4,7 +4,7 @@
 #include "voxel_grid.h"
 #include "example_decorator.h"
 #include "voxelization_specs.h"
-#include "anchors.h"
+#include "point_matrix.h"
 #include "fingerprint.h"
 #include "fingerprint_decorator.h"
 #include "example_fingerprint_decorator.h"
@@ -24,10 +24,21 @@ int main()
 	VoxelGrid        		    voxelgrid("test/voxelization_75.npy");				// costruisco un oggetto VoxelGrid
 	ExampleDecorator 			voxeldecorator(voxelgrid);							// inizializzo un decorator per incapsulare tale oggetto
 	VoxelizationSpecs		    voxelspec("test/voxelization_spec_75.npy");			// costruisco un oggetto Voxelization Specifications
-	Anchors     	 		    anchors("test/anchor_75.npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
+	PointMatrix     	 		anchors("test/anchor_75.npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
 	FingerPrint 	  			fingerprint("test/finger_print_75.npy");			// costruisco un oggetto FingerPrint
 	ExampleFingerPrintDecorator fd(fingerprint);									// infine inizializzo un decorator per incapsulare la fingerprint
 
+	int i = 0;
+	for(auto & p: anchors.getPointSet())
+	{
+		p[0] = i;
+		p[1] = rand() % 2;
+		p[2] = rand() % 2;
+		i+=1;
+	}
+	
+	anchors.representant();
+	return 0;
 	
 	DataAggregation aggregate(voxeldecorator, 										// Costruisco quindi un oggetto che "impacchetti"
 							  voxelspec, 											// i decorator e le specifiche in quanto
@@ -53,7 +64,7 @@ int main()
 			float y_hat = classifier.predict(aggregate,p);
 			float y     = voxelspec.center().squareDistance(p);
 			std::cout << "\t\t" << y_hat << "\t\t\t" << y << std::endl;
-			sp.addPoint(y_hat, y_hat * y_hat);
+			sp.addPoint(y_hat, y);
 	}
 	sp.set_ylabel("valori reali");
 	sp.set_xlabel("valori predetti");
