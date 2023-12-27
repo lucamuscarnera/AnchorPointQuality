@@ -108,7 +108,7 @@ class SimplePlot
 				std::cout << "|";
 				for(int i = 0;i < W;i++)
 				{
-					if( screen[(W-1) - i][j] == 0)
+					if( screen[i][j] == 0)
 						std::cout << "  ";
 					else
 					{
@@ -116,7 +116,7 @@ class SimplePlot
 							std::cout << "<>";
 						else
 						{
-							int count = screen[(W-1) - i][j];
+							int count = screen[i][j];
 							std::cout << (count < 10? " " : "" ) << count;
 						}
 					}

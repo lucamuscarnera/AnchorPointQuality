@@ -27,18 +27,20 @@ int main()
 	PointMatrix     	 		anchors("test/anchor_75.npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
 	FingerPrint 	  			fingerprint("test/finger_print_75.npy");			// costruisco un oggetto FingerPrint
 	ExampleFingerPrintDecorator fd(fingerprint);									// infine inizializzo un decorator per incapsulare la fingerprint
-
+	
+	/* INVARIANCE TEST
 	int i = 0;
 	for(auto & p: anchors.getPointSet())
 	{
 		p[0] = i;
-		p[1] = rand() % 2;
-		p[2] = rand() % 2;
+		p[1] = i*i;
+		p[2] = i*i*i;
 		i+=1;
 	}
 	
-	anchors.representant();
-	return 0;
+	anchors.mapIntoRepresentant();
+	anchors.standardize();
+	return 0;*/
 	
 	DataAggregation aggregate(voxeldecorator, 										// Costruisco quindi un oggetto che "impacchetti"
 							  voxelspec, 											// i decorator e le specifiche in quanto
@@ -58,13 +60,14 @@ int main()
 	//  				Y_hat = W_ijk * phi(X)_ijk + f_l * WF_l
 	// 
 	
+	float  i = -3;
 	for(auto & p : anchors.getPointSet())			
 	{		
 			p.print();
 			float y_hat = classifier.predict(aggregate,p);
 			float y     = voxelspec.center().squareDistance(p);
 			std::cout << "\t\t" << y_hat << "\t\t\t" << y << std::endl;
-			sp.addPoint(y_hat, y);
+			sp.addPoint(y_hat,y);
 	}
 	sp.set_ylabel("valori reali");
 	sp.set_xlabel("valori predetti");

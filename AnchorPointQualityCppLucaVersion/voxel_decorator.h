@@ -70,9 +70,14 @@ class VoxelDecorator
 							{
 								// calcolo le coordinate 
 								// nel sistema di riferimento cartesiano sul dominio I = (-1,1)^3
-								double x = (((double)ii) - (((double)i) - halfside))/side * 2 - 1;  
-								double y = (((double)jj) - (((double)j) - halfside))/side * 2 - 1;
-								double z = (((double)kk) - (((double)k) - halfside))/side * 2 - 1;
+								
+										 //				indice interno (da 0 a side - 1)
+										 //   
+										 // -------------------'------------------- //
+										 // |                                      |
+								double x = (((double)ii) - (((double)i) - halfside))/(side - 1) * 2 - 1;  
+								double y = (((double)jj) - (((double)j) - halfside))/(side - 1) * 2 - 1;
+								double z = (((double)kk) - (((double)k) - halfside))/(side - 1) * 2 - 1;
 								// considero solo i punti all interno della sfera di raggio 1
 								if( (x*x + y*y + z*z) <= 1)
 								{
@@ -91,17 +96,23 @@ class VoxelDecorator
 			{
 				// 1. mappa la subvoxel grid in una nuvola di punti
 				// 			>>> pointSet <= ...(subvoxelGrid);
-				
+				std::cout << std::endl;
 				PointMatrix P;
 				for(int i = 0 ; i < side ; i++)
 					for(int j = 0 ; j < side;j++)
 						for(int k = 0; k < side;k++)
 						{
-							Point3D p(i,j,k);
+							Point3D p(
+										 (1. * i)/ (side - 1),
+										 (1. * j)/ (side - 1),
+										 (1. * k)/ (side - 1)
+									  );
 							if( ret(i,j,k) > 0.5 )
+							{
 								P.addPoint(p);
+							}
 						}
-				
+
 				// 2.a se il numero di punti estratto é minore di 2 ritorrna la griglia ottenuta negli step precedenti
 				//			>>> return ret;
 				
@@ -109,16 +120,28 @@ class VoxelDecorator
 					return ret;
 				
 				// 2.b altrimenti mappa la nuvola di punti nel suo rappresentante di equivalenza
-				//			>>> pointSet.representant()
+				//			>>> pointSet.mapIntoRepresentant()
+				P.mapIntoRepresentant();
 				// 10. Standardizzo i punti tra 0 e 1
 				//			>>> pointSet.standardize()
+				P.standardize();
+				
 				// 11. Sovrascrivo ret
 				//			>>>	ret = ret * 0
+				ret *= 0;
 				//			>>> for p in pointSet'
+				for(auto & p : P.getPointSet())
+				{
 				//			>>>		i = p.coord[0] * ( shapeX - 1 )
 				//			>>>		j = p.coord[1] * ( shapeY - 1 )
 				//			>>>		k = p.coord[2] * ( shapeZ - 1 )
+						int i = p[0] * ( side - 1  );
+						int j = p[1] * ( side - 1  );
+						int k = p[2] * ( side - 1  );
 				//			>>>		ret[i,j,k] = 1
+						//std::cout << i << " " << j << " " << k<< std::endl;
+						ret(i,j,k) = 1.;
+				}
 				// 12. Ritorno  ret
 				//			>>> return ret
 			}

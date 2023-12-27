@@ -92,6 +92,13 @@ public:
 		// abbiamo un dot product che é quindi allineato con la data locality
 	}
 
+	void operator*= (T scalar)
+	{
+		for(int i = 0 ; i < side;i++)
+			for(int j = 0; j < side;j++)
+				for(int k = 0; k < side;k++)
+					data[index(i,j,k)] *= scalar;
+	}	
 private:
     std::array<T,side*side*side> data;
     constexpr size_t size() const {				// ottiene la dimensione totale del tensore

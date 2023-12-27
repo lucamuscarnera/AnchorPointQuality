@@ -45,13 +45,13 @@ class PointMatrix
 		Point3D sampleMean()
 		{
 			Point3D ret(0,0,0);
-			int i = 0;
+			double i = 0;
 			for(auto & p: pointSet)
 			{
-				ret.getX() = (ret.getX() * i + p.getX())/(i + 1);
-				ret.getY() = (ret.getY() * i + p.getY())/(i + 1);
-				ret.getZ() = (ret.getZ() * i + p.getZ())/(i + 1);
-				i+=1;
+				ret.getX() = (ret.getX() * i + p.getX())/(i + 1.);
+				ret.getY() = (ret.getY() * i + p.getY())/(i + 1.);
+				ret.getZ() = (ret.getZ() * i + p.getZ())/(i + 1.);
+				i++;
 			}
 			return ret;
 		}
@@ -86,6 +86,7 @@ class PointMatrix
 					ret(j,i) = valore;
 				}	
 			}
+			//std::cout << ret << std::endl;
 			return ret;
 		}		
 		
@@ -99,10 +100,49 @@ class PointMatrix
 				p[0] = newp[0];
 				p[1] = newp[1];
 				p[2] = newp[2];
+				//p.print();
+				//std::cout << std::endl;
 			}
 		}
 		
-		void representant() {
+		void standardize() 
+		{
+				// scritta sporca, giusto per provare. TODO: refactor
+				Point3D minimi(pointSet[0].getX(),pointSet[0].getY(),pointSet[0].getZ());
+				Point3D massimi(pointSet[0].getX(),pointSet[0].getY(),pointSet[0].getZ());
+				for( auto & p : pointSet)
+				{
+					for(int i = 0 ; i < 3 ; i ++)
+					{
+						if( p[i] > massimi[i] )
+						{
+							massimi[i] = p[i];
+						}
+						else
+						{
+							if(p[i] < minimi[i] )
+							{
+								minimi[i] = p[i];
+							}
+						}
+					}
+				}
+				
+				// adesso massimi = (x_max, y_max, z_max) e minimi = (x_min, y_min, z_min)
+				
+				// posso applicare la standardizzazione
+				for( auto & p : pointSet)
+				{
+					for(int i = 0 ; i < 3;i++)
+					{
+						p[i] = (p[i] - minimi[i])/(massimi[i] - minimi[i]);
+					}
+				}
+				
+
+		}
+		
+		void mapIntoRepresentant() {
 				/*********************************************************************************************	
 				 *	mappa la nuvola di punti nel suo rappresentante di equivalenza della relazione ~ dove
 				 *  x ~ y <--> esiste una rotazione che mappa x in y.
@@ -112,9 +152,10 @@ class PointMatrix
 			
 				// 3. Sottrai la media alla nuvola di punti
 				//			>>> pointSet <= pointSet - media(pointSet)
-				
 				Point3D mean = sampleMean();
 				shift(mean);
+				
+				
 				
 				// 4. Calcola la matrice di covarianza della nuvola
 				//			>>> C <= pointSet.covariance()
@@ -124,37 +165,87 @@ class PointMatrix
 				// 5. Ottieni la matrice degli autovettori di Calcola
 				//			>>> V <= eigenvectors(C)
 				
-				Eigen::EigenSolver<Eigen::MatrixXd> eigensolver;
+				Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
 				eigensolver.compute(C);
-				Eigen::MatrixXd V = eigensolver.eigenvectors().real();
+				Eigen::MatrixXd V = eigensolver.eigenvectors();
+				// ordino in maniera decrescente
+				V.rowwise().reverseInPlace();
+				//std::cout << "Matrice autovettori" << std::endl;
+				//std::cout << V << std::endl;
 				
 				// 6. Proietta il PointSet contro V
 				//			>>> pointSet' <= pointSet.project(V)
-				{
-					SimplePlot sp;
-					for(auto & p: pointSet)
-						sp.addPoint(p[0],p[1]);
-					sp.show(true);
-				}
+				/*{
+					//SimplePlot sp;
+					for(auto & p: pointSet){ 
+						p.print();
+						std::cout << std::endl;
+					}
+					//sp.show(true);
+				}*/
+				// std::cout << "PROIETTO" << std::endl;
+				
 				project(V);
+
+				
+				// std::cout << "PROIEZIONE ESEGUITA" << std::endl;
+				/*
 				{
-					SimplePlot sp;
-					for(auto & p: pointSet)
-						sp.addPoint(p[0],p[1]);
-					sp.show(true);
-				}				
+					//SimplePlot sp;
+					for(auto & p: pointSet){ 
+						p.print();
+						std::cout << std::endl;
+					}
+					//sp.show(true);
+				}*/		
 				// 7. Ottieni il segno delle coordinate massime in modulo
 				//			>>> massimali[3] = -1,-1,-1
+				Point3D massimali(0,0,0);
 				//			>>> for p in pointSet' 
+				for(auto & p : pointSet) 
+				{
 				//			>>>		for i,coord in p.coordinate
+					for(int i = 0 ; i < 3; i++)
+					{
 				//			>>>			if |coord| > massimali[i]
+						if( std::abs(p[i]) > std::abs(massimali[i]) )
+						{							
 				//			>>>				massimali[i] = coord
+							massimali[i]  = p[i];
+						}
+					}
 				//			>>> segni = sign(massimali)
-				// 8. Moltiplica l'autovettore i-esimo per il segno i-esimo
-				//			>>> V' <= ( segno_1*v_1 | segno_2*v_2 | segno_3*v_3 )
-				// 9. Proietta il PointSet contro V'
-				//			>>> pointSet <= pointSet.project(V')
+				}
+				
+				/*
+				std::cout << "TROVATI I MASSIMALI " << std::endl;
+				massimali.print();
+				std::cout << std::endl;
+				*/
+				
+				// cambia i segni
+				for(auto & p: pointSet){ 
+						for(int i = 0 ; i < 3;i++)
+						{
+								if( massimali[i] < 0 )
+								{
+									p[i] *= -1;				// in questo modo forzo l'elemento massimale ad avere segno positivo
+								}
+						}
+					}
 			
+				
+				
+				
+				//std::cout << "INVARIANZA PER SEGNO OTTENUTA" << std::endl;
+				/*{
+					//SimplePlot sp;
+					for(auto & p: pointSet){ 
+						//p.print();
+						std::cout << std::endl;
+					}
+					//sp.show(true);
+				}*/	
 		}
 		
 	private:
