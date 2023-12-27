@@ -24,30 +24,19 @@ int main()
 	VoxelGrid        		    voxelgrid("test/voxelization_75.npy");				// costruisco un oggetto VoxelGrid
 	ExampleDecorator 			voxeldecorator(voxelgrid);							// inizializzo un decorator per incapsulare tale oggetto
 	VoxelizationSpecs		    voxelspec("test/voxelization_spec_75.npy");			// costruisco un oggetto Voxelization Specifications
+	
 	PointMatrix     	 		anchors("test/anchor_75.npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
+	
 	FingerPrint 	  			fingerprint("test/finger_print_75.npy");			// costruisco un oggetto FingerPrint
 	ExampleFingerPrintDecorator fd(fingerprint);									// infine inizializzo un decorator per incapsulare la fingerprint
 	
-	/* INVARIANCE TEST
-	int i = 0;
-	for(auto & p: anchors.getPointSet())
-	{
-		p[0] = i;
-		p[1] = i*i;
-		p[2] = i*i*i;
-		i+=1;
-	}
-	
-	anchors.mapIntoRepresentant();
-	anchors.standardize();
-	return 0;*/
-	
+
 	DataAggregation aggregate(voxeldecorator, 										// Costruisco quindi un oggetto che "impacchetti"
 							  voxelspec, 											// i decorator e le specifiche in quanto
 							  fd);													// saranno informazioni di cui avrá bisogno il classificatore per fare inferenza
 							  
 	
-	Tensor<float,30> W("test/W_fine_15.npy");										// carico il tensore dei pesi
+	Tensor<float,30>   W("test/W_fine_15.npy");										// carico il tensore dei pesi
 	NumpyArray<float>  Wf("test/Wf_fine_15.npy");									// carico il tensore dei pesi del finger print [TODO questo formato non va bene]
 	Classifier<float,30> classifier(W,Wf);											// inizializzo il classificatore usando il vettore dei pesi appena caricato
  

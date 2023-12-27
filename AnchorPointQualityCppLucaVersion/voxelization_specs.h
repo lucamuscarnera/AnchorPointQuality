@@ -20,9 +20,9 @@ class VoxelizationSpecs
 	VoxelizationSpecs(std::string path)
 	{
 		// inizializzazione da file .npy
-		std::cout << path << std::endl;
+		//std::cout << path << std::endl;
 		NumpyArray<double> array(path);
-		std::cout << "ordine = " << array.shape.size() << " shape = " <<  array.shape[0] << std::endl;
+		//std::cout << "ordine = " << array.shape.size() << " shape = " <<  array.shape[0] << std::endl;
 		x_min = array.get(0);
 		x_max = array.get(1);
 		y_min = array.get(2);

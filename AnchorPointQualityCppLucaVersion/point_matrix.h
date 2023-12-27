@@ -135,7 +135,7 @@ class PointMatrix
 				{
 					for(int i = 0 ; i < 3;i++)
 					{
-						p[i] = (p[i] - minimi[i])/(massimi[i] - minimi[i]);
+						p[i] = (p[i] - minimi[i] + 1e-5)/(massimi[i] - minimi[i] + 1e-5);
 					}
 				}
 				

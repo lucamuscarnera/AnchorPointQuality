@@ -11,6 +11,11 @@
 #include <string>
 #include <fstream>
 
+/*
+N U M P Y { t i p o = f 8 , . . . , s h a p e = ( s h a p e X, s h a p e Y , s h a p e Z ) } \x10
+byte1 byte2 ... byte_sizeof(tipo)*N
+*/
+
 template
 <typename DataType>
 class NumpyArray

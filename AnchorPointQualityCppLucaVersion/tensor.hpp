@@ -6,6 +6,7 @@
 #include <iostream>
 #include "numpy_array.h"
 #include <concepts>
+#include <cmath>
 
 /*  Specializzazione del lavoro di Giuseppe:  
  *	La classe çontiene tutto il necessario ma possiamo sfruttare 
@@ -29,7 +30,12 @@ concept GroupInjectable = requires (T a, P b)
 template <typename T, size_t side>
 class Tensor {
 public:
-    Tensor() {}
+    Tensor() {
+		for(int i = 0; i < side;i++)
+			for(int j = 0; j < side; j ++)
+				for(int k = 0; k < side; k++)
+					data[index(i,j,k)] = 0;
+	}
 	Tensor(std::string path)  {
 		// genero un oggetto numpy array
 		// e copio il contenuto. 
@@ -92,6 +98,28 @@ public:
 		// abbiamo un dot product che é quindi allineato con la data locality
 	}
 
+	// prodotto scalare con "sbilanciamento" nelle sfera di raggio radix
+	template <typename P, typename Q>
+	T specialDot(Tensor<P,side> & W, int radius, Q & fWf)
+	{
+		static_assert(GroupInjectable<P,T>, "!!!");
+		static_assert(GroupInjectable<Q,T>, "!!!");
+		T ret = T(0.);
+			for(int i = 0; i < side;i++)
+				for(int j = 0; j < side; j++)
+					for(int k = 0; k < side; k++)
+					{
+						
+						float x = i - (side / 2);
+						float y = j - (side / 2);
+						float z = k - (side / 2);
+						
+						float O_ijk = (x*x + y*y + z*z) < radius*radius;
+						ret += data[index(i,j,k)] * ( W(i,j,k) + O_ijk * fWf );
+					}
+		return ret;
+	}
+
 	void operator*= (T scalar)
 	{
 		for(int i = 0 ; i < side;i++)
@@ -99,6 +127,32 @@ public:
 				for(int k = 0; k < side;k++)
 					data[index(i,j,k)] *= scalar;
 	}	
+	
+	void operator-= (Tensor<T,side> & other)
+	{
+		for(int i = 0 ; i < side;i++)
+			for(int j = 0; j < side;j++)
+				for(int k = 0; k < side;k++)
+					data[index(i,j,k)] -= other(i,j,k);
+	}		
+	
+	void operator+= (Tensor<T,side> & other)
+	{
+		for(int i = 0 ; i < side;i++)
+			for(int j = 0; j < side;j++)
+				for(int k = 0; k < side;k++)
+					data[index(i,j,k)] += other(i,j,k);
+	}	
+	
+	T norm()
+	{
+		T ret = 0;
+		for(int i = 0; i < side;i++)
+			for(int j = 0; j < side; j ++)
+				for(int k = 0; k < side; k++)
+					ret += data[index(i,j,k)]*data[index(i,j,k)];
+		return std::sqrt(ret);
+	}
 private:
     std::array<T,side*side*side> data;
     constexpr size_t size() const {				// ottiene la dimensione totale del tensore

@@ -96,7 +96,6 @@ class VoxelDecorator
 			{
 				// 1. mappa la subvoxel grid in una nuvola di punti
 				// 			>>> pointSet <= ...(subvoxelGrid);
-				std::cout << std::endl;
 				PointMatrix P;
 				for(int i = 0 ; i < side ; i++)
 					for(int j = 0 ; j < side;j++)
@@ -139,7 +138,7 @@ class VoxelDecorator
 						int j = p[1] * ( side - 1  );
 						int k = p[2] * ( side - 1  );
 				//			>>>		ret[i,j,k] = 1
-						//std::cout << i << " " << j << " " << k<< std::endl;
+				//		std::cout << i << " " << j << " " << k<< std::endl;
 						ret(i,j,k) = 1.;
 				}
 				// 12. Ritorno  ret

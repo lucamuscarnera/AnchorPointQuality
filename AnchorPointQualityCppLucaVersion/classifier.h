@@ -18,6 +18,22 @@ class Classifier
 		Wf(Wf)
 		{}
 		
+		// predizione direttamente su un tensore e su una finger print
+		template
+		<typename T,typename FPD>
+		auto base_predict(Tensor<T,side> & X, FPD & f, bool proto = true) // if proto é vera allora il ligando non viene considerato.
+		{
+			if(proto)
+			{
+				return X.dot(W);
+			}
+			else
+			{
+				float fWf = f.dot(Wf);
+				return X.specialDot(W,2,fWf);
+			}
+		}
+		
 		template
 		<typename VD,typename FPD>
 		auto predict(DataAggregation<VD,FPD> & aggregate, Point3D & p)
@@ -31,8 +47,12 @@ class Classifier
 			// calcolo il prodotto scalare tra la finger print e il regressore
 			float fWf = aggregate.getFingerPrintDecorator().dot(Wf);
 			
-			return A.dot(W);
+			return A.specialDot(W,2,fWf);
 		}
+		
+		Tensor<T_voxel,side> & getW() {return W;}
+		
+		
 		
 	private:
 		Tensor<T_voxel,side> & W;
