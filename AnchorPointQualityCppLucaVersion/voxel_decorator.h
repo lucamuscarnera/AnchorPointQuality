@@ -58,7 +58,7 @@ class VoxelDecorator
 							((kk < 0) || (kk >= shape_Z()))
 						)
 						{
-							value = 0;
+							value = (rand() % 2); // TODO : occhio che qua era  0 , é per fare una prova
 						}
 						else
 						{

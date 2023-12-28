@@ -289,7 +289,7 @@ void random_batch_reward_grad_iteration(
 											  fpds,
 											  Ys
 										);
-	gradient *= 0.01; // learning rate
+	gradient *= 0.1; // learning rate
 	classifier.getW() += gradient;
 	return;
 	}
@@ -300,69 +300,175 @@ int massimo(int a,int b)
 	return (a > b ? a : b);
 }
 
+void plot_history(std::vector<float> history)
+{
+	SimplePlot sp; 			// per visualizzare i risultati
+	if(history.size() < 100) return;
+	float chunk = ( history.size() / 10.);
+	int count = 0;
+	for(float i = 0 ; i < history.size() ; i += chunk)
+	{
+		if(i > 0)
+		{
+			float media = 0;
+			for(int j = 0 ; j < chunk;j++)
+			{
+				media = (j * media + history[i - int(j)])/(j + 1);
+			}
+			sp.addPoint(count, media);
+		}
+		else
+			sp.addPoint(count, history[int(i)]);
+		count++;
+	}
+	sp.set_title("REWARD FUNCTION");
+	sp.set_xlabel("sample analizzati");
+	//sp.set_ylim(0,1);
+	sp.show();
+}
+
+
+template
+<typename T_voxel,int side>
+void plot_grafico(Classifier<T_voxel,side> & classifier, int idx)
+{
+	SimplePlot sp; 																	// per visualizzare i risultati
+	VoxelGrid        		    voxelgrid("./processed_data/voxelizations/voxelization_" + std::to_string(idx) + ".npy");				// costruisco un oggetto VoxelGrid
+	ExampleDecorator 			voxeldecorator(voxelgrid);							// inizializzo un decorator per incapsulare tale oggetto
+	VoxelizationSpecs		    voxelspec("./processed_data/voxelization_specs/voxelization_spec_" + std::to_string(idx) + ".npy");			// costruisco un oggetto Voxelization Specifications
+	
+	PointMatrix     	 		anchors("./processed_data/anchors/anchor_" + std::to_string(idx) + ".npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
+	
+	FingerPrint 	  			fingerprint("./processed_data/finger_prints/finger_print_" + std::to_string(idx) + ".npy");			// costruisco un oggetto FingerPrint
+	ExampleFingerPrintDecorator fd(fingerprint);									// infine inizializzo un decorator per incapsulare la fingerprint
+	
+
+	DataAggregation aggregate(voxeldecorator, 										// Costruisco quindi un oggetto che "impacchetti"
+							  voxelspec, 											// i decorator e le specifiche in quanto
+							  fd);													// saranno informazioni di cui avrá bisogno il classificatore per fare inferenza
+							  
+	 
+	
+	// il classificatore quindi, dato in ingresso un aggregato e un punto, usa l'aggregato per estrarre
+	// una subvoxelgrid attorno al punto richiesto e la usa, dopo la trasformazione
+	// nel rappresentante di equivalenza delle rotazioni - descritta dalla funzione phi - , come query per fare inferenza
+	// In notazione di Einstein, in particolare
+	//
+	//  				Y_hat = W_ijk * phi(X)_ijk + f_l * WF_l
+	// 
+	
+	float  i = -3;
+	for(auto & p : anchors.getPointSet())			
+	{		
+			float y_hat = classifier.predict(aggregate,p);
+			float y     = voxelspec.center().squareDistance(p);
+			sp.addPoint(y_hat,y);
+	}
+	sp.set_title(" SAMPLE #" + std::to_string(idx));
+	sp.set_ylabel("valori reali");
+	sp.set_xlabel("valori predetti");
+	sp.show();
+}
+
 int main(int argc, char* argv[]) {
 	
-	constexpr int window = 30;
+	constexpr int window = 26;
 	// carico i dataset
 	
 	std::vector<VoxelGrid> 				voxelizations;
 	std::vector<VoxelizationSpecs> 		voxelization_specs;
 	std::vector<PointMatrix>			anchors;
 	std::vector<FingerPrint>			fingerprints;
-	
+
+	std::vector<VoxelGrid> 				voxelizations_test;
+	std::vector<VoxelizationSpecs> 		voxelization_specs_test;
+	std::vector<PointMatrix>			anchors_test;
+	std::vector<FingerPrint>			fingerprints_test;
+		
 	
 	std::string voxelizations_path      = "./processed_data/voxelizations"; 
 	std::string voxelization_specs_path = "./processed_data/voxelization_specs"; 
 	std::string anchors_path            = "./processed_data/anchors"; 
 	std::string fingerprints_path       = "./processed_data/finger_prints"; 
 
-	int N = 100; //number_of_files_in_directory(voxelizations_path);
+	int N = number_of_files_in_directory(voxelizations_path);
+	int N_train = N * 0.8;
 	
 	for(int i = 0; i < N;i++)
 	{
-		std::cout << "leggo file " << i << std::endl;
-		voxelizations.push_back(voxelizations_path                + "/voxelization_"      + std::to_string(i) + ".npy");
-		voxelization_specs.push_back(voxelization_specs_path      + "/voxelization_spec_" + std::to_string(i) + ".npy");
-		anchors.push_back(anchors_path                            + "/anchor_"            + std::to_string(i) + ".npy");
-		fingerprints.push_back(fingerprints_path                  + "/finger_print_"      + std::to_string(i) + ".npy");
+		if(i < N_train)
+		{
+			std::cout << "(training set) leggo file " << i << std::endl;
+			voxelizations.push_back(voxelizations_path                + "/voxelization_"      + std::to_string(i) + ".npy");
+			voxelization_specs.push_back(voxelization_specs_path      + "/voxelization_spec_" + std::to_string(i) + ".npy");
+			anchors.push_back(anchors_path                            + "/anchor_"            + std::to_string(i) + ".npy");
+			fingerprints.push_back(fingerprints_path                  + "/finger_print_"      + std::to_string(i) + ".npy");
+		}
+		else
+		{
+				std::cout << "(test set) leggo file " << i << std::endl;
+				voxelizations_test.push_back(voxelizations_path                + "/voxelization_"      + std::to_string(i) + ".npy");
+				voxelization_specs_test.push_back(voxelization_specs_path      + "/voxelization_spec_" + std::to_string(i) + ".npy");
+				anchors_test.push_back(anchors_path                            + "/anchor_"            + std::to_string(i) + ".npy");
+				fingerprints_test.push_back(fingerprints_path                  + "/finger_print_"      + std::to_string(i) + ".npy");
+		}
 	}
-	
-	Tensor<float,window>   W("test/W_fine_15.npy");										// carico il tensore dei pesi
-	W *= 1e-5;
-	NumpyArray<float>  Wf("test/Wf_fine_15.npy");									// carico il tensore dei pesi del finger print [TODO questo formato non va bene]
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::normal_distribution<float> dis_continuous(0.0,1.0);
+	//Tensor<float,window>   W("test/W_fine_15.npy");										// carico il tensore dei pesi
+	Tensor<float,window> W(gen, dis_continuous);										// costruisco il tensore partendo da una distribuzione normale univariata
+	W *= 1e-5;		
+	NumpyArray<float>  Wf("test/Wf_fine_15.npy");										// carico il tensore dei pesi del finger print [TODO questo formato non va bene]
 	Classifier<float,window> classifier(W,Wf);											// inizializzo il classificatore usando il vettore dei pesi appena caricato
 	
 	std::vector<float> history;
 	
-	for( int i  =0 ; i < 2000 ;i ++)
+	int i = 0;
+	
+
+	std::uniform_int_distribution<> dis(N_train, N_train + voxelizations_test.size() - 1);   // un sample a caso nel test set
+
+	for(;;)
 	{
 		float reward =  random_batch_reward<float,window>(
 			classifier,
 			150,
-			voxelizations,
-			voxelization_specs,
-			anchors,
-			fingerprints
+			voxelizations_test,
+			voxelization_specs_test,
+			anchors_test,
+			fingerprints_test
 		);
 		history.push_back(reward);
 		float media = 0;
+		float varianza = 0;
 		float count = 0;
 		for(int i = massimo(0, history.size() - 100); i < history.size();i++)
 		{
 			media = (count * media + history[i])/(count + 1.);
+			varianza = (count * varianza + (history[i])*(history[i]) )/(count + 1.);
 			count++;
 		}
-		
-		std::cout << "reward = " << reward << " \t last 100 average" <<  media <<  std::endl;
+		varianza -= media*media;
+		std::cout << i << ") \t " << reward << " \t " <<  media <<"\t " << varianza << std::endl;
 		random_batch_reward_grad_iteration<float,window>(
 			classifier,
-			100,
+			1000,
 			voxelizations,
 			voxelization_specs,
 			anchors,
 			fingerprints
 		);
 		
+		if( i % 100 == 0 )
+		{
+			int idx = dis(gen);
+			std::cout << idx;
+			plot_grafico(classifier, idx);
+			plot_history(history);
+		}
+		i++;
 	}
     return 0;
 }

@@ -1,5 +1,6 @@
 #ifndef POINT3D_H
 #define POINT3D_H
+#include <cmath>
 
 class Point3D
 {
@@ -16,7 +17,8 @@ class Point3D
 	
 	double squareDistance(Point3D & other)
 	{
-		return (x - other.x)*(x - other.x) +  (y - other.y)*(y - other.y) +  (z - other.z)*(z - other.z);
+		double ret = (x - other.x)*(x - other.x) +  (y - other.y)*(y - other.y) +  (z - other.z)*(z - other.z);
+		return ret*ret;
 	}
 	
 	double & getX() {return x;}

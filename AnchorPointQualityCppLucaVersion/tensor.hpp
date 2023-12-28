@@ -7,7 +7,7 @@
 #include "numpy_array.h"
 #include <concepts>
 #include <cmath>
-
+#include <random>
 /*  Specializzazione del lavoro di Giuseppe:  
  *	La classe çontiene tutto il necessario ma possiamo sfruttare 
  *  il fatto di conoscere a compile time la dimensione del tensore.
@@ -35,6 +35,13 @@ public:
 			for(int j = 0; j < side; j ++)
 				for(int k = 0; k < side; k++)
 					data[index(i,j,k)] = 0;
+	}
+	template<typename Distribution>
+    Tensor(std::mt19937 & gen, Distribution dis ) {
+		for(int i = 0; i < side;i++)
+			for(int j = 0; j < side; j ++)
+				for(int k = 0; k < side; k++)
+					data[index(i,j,k)] = T(dis(gen));
 	}
 	Tensor(std::string path)  {
 		// genero un oggetto numpy array

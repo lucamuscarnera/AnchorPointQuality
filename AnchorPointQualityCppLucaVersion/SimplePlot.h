@@ -21,7 +21,8 @@ class Point2D
 class SimplePlot
 {
 	public:
-		SimplePlot() {};
+		SimplePlot() : y_lim_set(false), x_lim_set(false) {};
+		
 		void addPoint(float x, float y, std::string symbol = "<>")
 		{
 			points.push_back( Point2D(x,y,symbol) );
@@ -31,11 +32,29 @@ class SimplePlot
 		{
 			xlabel = label;
 		}
+		
+		void set_title(std::string label)
+		{
+			title = label;
+		}
+		
 
 		void set_ylabel(std::string label)
 		{
 			ylabel = label;
 		}		
+		
+		void set_xlim(float from,float to) {
+			x_lim_set = true;
+			x_lim_from = from;
+			x_lim_to   = to;
+		}
+
+		void set_ylim(float from,float to) {
+			y_lim_set = true;
+			y_lim_from = from;
+			y_lim_to   = to;
+		}
 		
 		void show(bool showid = false)
 		{
@@ -69,6 +88,18 @@ class SimplePlot
 						y_max = p.getY();				
 			}
 			
+			
+			if( x_lim_set )
+			{
+				x_min = x_lim_from;
+				x_max = x_lim_to;
+			}
+			if( y_lim_set )
+			{
+				y_min = y_lim_from;
+				y_max = y_lim_to;
+			}
+			
 			std::vector<std::string> symbols;
 			
 			char count = 0;
@@ -77,13 +108,33 @@ class SimplePlot
 				float x = p.getX();
 				float y = p.getY();
 				
-				int i = (x - x_min)/(x_max - x_min) * (W - 1);
-				int j = (H - 1) - (y - y_min)/(y_max - y_min) * (H - 1);	
-				symbols.push_back(p.getSymbol());
-				screen[i][j] = count;
+				if( (x_min <= x) && (x <= x_max)  )
+				{		
+					if( (y_min <= y) && (y <= y_max) )
+					{
+						int i = (x - x_min)/(x_max - x_min) * (W - 1);
+						int j = (H - 1) - (y - y_min)/(y_max - y_min) * (H - 1);	
+						symbols.push_back(p.getSymbol());
+						screen[i][j] = count;
+					}
+				}
 				count++;
 			}
 			
+			std::cout << std::endl << "\t\t";
+			for(int i = 0;i < W;i++)
+			{
+				if(  (i >= (int(W/2) - (title.size()/2)))  && (i <= (int(W/2) + (title.size()/2))) )
+				{
+					std::cout << title[(i - (int(W/2) - (title.size()/2)))] <<" ";
+				} 
+				else 
+				{
+					std::cout << "  ";
+				}
+				
+			}
+			std::cout << std::endl;
 			
 			std::cout << std::endl << "\t\t";
 			std::cout << "  +";
@@ -153,6 +204,15 @@ class SimplePlot
 		std::vector<Point2D> points;
 		std::string xlabel;
 		std::string ylabel;
+		std::string title;
+		
+		float x_lim_from;
+		float y_lim_from;
+		float x_lim_to;
+		float y_lim_to;
+		
+		bool x_lim_set;
+		bool y_lim_set;
 };
 
 #endif
