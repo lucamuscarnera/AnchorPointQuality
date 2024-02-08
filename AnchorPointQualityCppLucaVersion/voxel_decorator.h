@@ -13,6 +13,8 @@
 #include "point3d.h"
 #include "point_matrix.h"
 
+//#define PAD_WITH_RANDOM
+
 template<typename T,typename format>
 class VoxelDecorator
 {
@@ -58,7 +60,12 @@ class VoxelDecorator
 							((kk < 0) || (kk >= shape_Z()))
 						)
 						{
-							value = (rand() % 2); // TODO : occhio che qua era  0 , é per fare una prova
+							#ifndef PAD_WITH_RANDOM
+								value = 0;//(rand() % 2); // TODO : occhio che qua era  0 , é per fare una prova
+							#endif
+							#ifdef PAD_WITH_RANDOM
+								value = rand() % 2;
+							#endif
 						}
 						else
 						{
