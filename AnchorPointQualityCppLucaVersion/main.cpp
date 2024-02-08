@@ -16,19 +16,30 @@
 
 
 
-int main()
+int main(int argc, char *argv[])
 {
-	
+	std::string folder_name = "test";
+	int object_name = 75;
+	if(argc == 3) {
+		folder_name 		= argv[1];												// specifico la cartella
+		object_name         = std::atoi(argv[2]);									// specifico quale oggetto
+	}
+
+	std::cout << "FOLDER : <" << folder_name << ">, OBJECT : <" << object_name << ">" << std::endl;
 	SimplePlot sp; 																	// per visualizzare i risultati
 	
-	VoxelGrid        		    voxelgrid("test/voxelization_75.npy");				// costruisco un oggetto VoxelGrid
+	VoxelGrid        		    voxelgrid(folder_name +"/voxelizations/voxelization_" + std::to_string(object_name) + ".npy");				// costruisco un oggetto VoxelGrid
+	std::cout << ".";
 	ExampleDecorator 			voxeldecorator(voxelgrid);							// inizializzo un decorator per incapsulare tale oggetto
-	VoxelizationSpecs		    voxelspec("test/voxelization_spec_75.npy");			// costruisco un oggetto Voxelization Specifications
+	VoxelizationSpecs		    voxelspec(folder_name + "/voxelization_specs/voxelization_spec_" + std::to_string(object_name) + ".npy");			// costruisco un oggetto Voxelization Specifications
+	std::cout << ".";
 	
-	PointMatrix     	 		anchors("test/anchor_75.npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
+	PointMatrix     	 		anchors(folder_name + "/anchors/anchor_" + std::to_string(object_name) + ".npy");						// costruisco un oggetto Anchors, che contiene una lista di anchor points
+	std::cout << ".";
 	
-	FingerPrint 	  			fingerprint("test/finger_print_75.npy");			// costruisco un oggetto FingerPrint
+	FingerPrint 	  			fingerprint(folder_name + "/finger_prints/finger_print_" + std::to_string(object_name) + ".npy");			// costruisco un oggetto FingerPrint
 	ExampleFingerPrintDecorator fd(fingerprint);									// infine inizializzo un decorator per incapsulare la fingerprint
+	std::cout << ".";
 	
 
 	DataAggregation aggregate(voxeldecorator, 										// Costruisco quindi un oggetto che "impacchetti"
